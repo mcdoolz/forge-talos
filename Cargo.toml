@@ -1,0 +1,40 @@
+[package]
+name = "forge-talos"
+version = "0.1.0"
+edition = "2021"
+authors = ["Digital Forge Canada"]
+license = "MIT"
+description = "Async Rust library for invoking the Google Antigravity `agy` CLI as a subprocess with structured transcript parsing."
+repository = "https://github.com/mcdoolz/forge-talos"
+readme = "README.md"
+keywords = ["agent", "antigravity", "agy", "cli", "ai"]
+categories = ["api-bindings", "command-line-utilities", "asynchronous"]
+
+[dependencies]
+# Async runtime (process spawning, filesystem, synchronization, buffered IO, timeouts)
+tokio = { version = "1", features = ["process", "fs", "sync", "io-util", "time", "macros", "rt", "rt-multi-thread"] }
+tokio-stream = "0.1"
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+
+# Unique IDs
+uuid = { version = "1", features = ["v4", "serde"] }
+
+# Observability
+tracing = "0.1"
+
+# Error handling
+thiserror = "2"
+
+# Stream combinators
+pin-project-lite = "0.2"
+
+# Home directory resolution
+dirs = "6"
+
+[dev-dependencies]
+tracing-subscriber = "0.3"
+
