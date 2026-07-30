@@ -55,6 +55,8 @@ pub struct TalosStream {
     conversation_id: Option<String>,
     collected_text: Vec<String>,
     start: Instant,
+    #[allow(dead_code)]
+    _guard: Option<crate::pid_guard::PidGuard>,
 }
 
 impl Unpin for TalosStream {}
@@ -77,6 +79,10 @@ impl TalosStream {
         let reader = BufReader::new(stdout);
         let lines = AsyncBufReadExt::lines(reader);
 
+        let _guard = child.id().map(|pid| {
+            crate::pid_guard::PidGuard::new(pid, conversation_id.as_deref().unwrap_or("unknown"))
+        });
+
         Ok(Self {
             lines,
             child,
@@ -85,6 +91,7 @@ impl TalosStream {
             conversation_id,
             collected_text: Vec::new(),
             start: Instant::now(),
+            _guard,
         })
     }
 

@@ -38,3 +38,7 @@ dirs = "6"
 [dev-dependencies]
 tracing-subscriber = "0.3"
 
+
+[profile.dev.package."*"]
+debug = 0
+opt-level = 1

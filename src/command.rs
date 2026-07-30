@@ -78,6 +78,12 @@ impl<'a> CommandBuilder<'a> {
             args.push(project.clone());
         }
 
+        // --conversation (optional)
+        if let Some(ref conv_id) = self.request.conversation_id {
+            args.push("--conversation".into());
+            args.push(conv_id.clone());
+        }
+
         // Environment variables forwarded as --env KEY=VALUE
         for (key, value) in &self.request.environment {
             args.push("--env".into());

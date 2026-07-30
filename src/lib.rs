@@ -41,6 +41,7 @@ pub mod config;
 pub mod error;
 pub mod stream;
 pub mod transcript;
+mod pid_guard;
 
 // Re-export the public API at the crate root.
 pub use config::TalosConfig;
@@ -135,6 +136,12 @@ impl TalosRequest {
     /// Set the model for this request.
     pub fn with_model(mut self, model: Model) -> Self {
         self.model = model;
+        self
+    }
+
+    /// Set the conversation ID to resume a previous session.
+    pub fn with_conversation_id(mut self, id: impl Into<String>) -> Self {
+        self.conversation_id = Some(id.into());
         self
     }
 
@@ -287,22 +294,26 @@ impl Talos {
         let start = Instant::now();
         let mut cmd = CommandBuilder::new(&self.config, &req).build();
 
-        let output = tokio::time::timeout(
-            Duration::from_secs(
-                req.timeout_override
-                    .unwrap_or(self.config.defaults.timeout_secs),
-            ),
-            cmd.output(),
-        )
-        .await
-        .map_err(|_| TalosError::Timeout)?
-        .map_err(|e| {
+        let mut child = cmd.spawn().map_err(|e| {
             if e.kind() == std::io::ErrorKind::NotFound {
                 TalosError::AgyNotFound
             } else {
                 TalosError::IoError(e)
             }
         })?;
+
+        let _guard = child.id().map(|pid| pid_guard::PidGuard::new(pid, req.conversation_id.as_deref().unwrap_or("unknown")));
+
+        let output = tokio::time::timeout(
+            Duration::from_secs(
+                req.timeout_override
+                    .unwrap_or(self.config.defaults.timeout_secs),
+            ),
+            child.wait_with_output(),
+        )
+        .await
+        .map_err(|_| TalosError::Timeout)?
+        .map_err(|e| TalosError::IoError(e))?;
 
         let duration = start.elapsed();
         let stderr = String::from_utf8_lossy(&output.stderr).to_string();
