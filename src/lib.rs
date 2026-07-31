@@ -75,9 +75,9 @@ impl Model {
     /// Returns the CLI flag value for `--model`.
     pub fn as_str(&self) -> &'static str {
         match self {
-            Model::GeminiFlash => "gemini-flash-agent",
-            Model::GeminiPro => "gemini-pro-agent",
-            Model::GeminiFlashLite => "gemini-flash-lite-agent",
+            Model::GeminiFlash => "gemini-3.6-flash-high",
+            Model::GeminiPro => "gemini-3.1-pro-high",
+            Model::GeminiFlashLite => "gemini-3.5-flash-medium",
         }
     }
 }
